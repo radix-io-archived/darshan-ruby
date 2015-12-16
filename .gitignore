@@ -1,0 +1,9 @@
+ext/darshan/Darshan3rb.so
+ext/darshan/Makefile
+ext/darshan/bgq-module.o
+ext/darshan/darshan-ruby.o
+ext/darshan/hdf5-module.o
+ext/darshan/mkmf.log
+ext/darshan/mpiio-module.o
+ext/darshan/pnetcdf-module.o
+ext/darshan/posix-module.o
