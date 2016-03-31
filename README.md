@@ -20,8 +20,10 @@ Darshan-Ruby is available as a ruby gem on rubygems.org.
 INSTALLING 
 ----------
 
-Darshan must be installed with bzip2 support. Assuming the path to
-Darshan is "path/to/darshan", install Darshan-Ruby can be done as
-follows:
+Darshan must be installed with bzip2 support, and with the --enable-shared 
+build option. Assuming the path to Darshan is "path/to/darshan", install 
+Darshan-Ruby can be done as follows:
 
 > gem install darshan-ruby -- --with-darshan-dir=path/to/darshan
+
+
