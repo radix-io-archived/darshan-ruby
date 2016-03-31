@@ -26,4 +26,8 @@ Darshan-Ruby can be done as follows:
 
 > gem install darshan-ruby -- --with-darshan-dir=path/to/darshan
 
+TESTING
+-------
 
+A comprehensive example program can be found 
+[here](https://xgitlab.cels.anl.gov/darshan/darshan-ruby/blob/master/test/test.rb).
