@@ -27,7 +27,7 @@ static VALUE rb_darshan_open(VALUE self, VALUE name)
 
 		// get the job struct
 		struct darshan_job job;
-		int err = darshan_log_getjob(fd,&job);
+		int err = darshan_log_get_job(fd,&job);
 
 		if(err < 0) return Qnil;
 		
@@ -63,8 +63,9 @@ static VALUE rb_darshan_open(VALUE self, VALUE name)
 		rb_iv_set(res,"@metadata", metadata);
 
 		// set the executable name
-		char exe[DARSHAN_EXE_LEN+2];
-		err = darshan_log_getexe(fd, exe);
+		char exe[DARSHAN_EXE_LEN+1];
+		memset(exe,0,DARSHAN_EXE_LEN+1);
+		err = darshan_log_get_exe(fd, exe);
 
 		if(err < 0) return Qnil;
 
@@ -75,10 +76,9 @@ static VALUE rb_darshan_open(VALUE self, VALUE name)
 		rb_iv_set(res,"@current_module", INT2NUM(-1));
 
 		// set the list of mount points
-		char** mnt_pts = NULL;
-		char** fs_types = NULL;
 		int count = 0;
-		err = darshan_log_getmounts(fd,&mnt_pts,&fs_types,&count);
+		struct darshan_mnt_info *mnt_info;
+		err = darshan_log_get_mounts(fd,&mnt_info,&count);
 		
 		if(err < 0) {
 			return Qnil;
@@ -90,22 +90,17 @@ static VALUE rb_darshan_open(VALUE self, VALUE name)
 		int i;
 		for(i=0; i<count; i++) {
 			VALUE hash = rb_hash_new();
-			rb_hash_aset(hash,path,rb_str_new2(mnt_pts[i]));
-			rb_hash_aset(hash,type,rb_str_new2(fs_types[i]));
+			rb_hash_aset(hash,path,rb_str_new2(mnt_info[i].mnt_path));
+			rb_hash_aset(hash,type,rb_str_new2(mnt_info[i].mnt_type));
 			rb_ary_store(mp,i,hash);
-			if(mnt_pts != NULL && mnt_pts[i] != NULL) 
-				free(mnt_pts[i]);
-			if(fs_types != NULL && fs_types[i] != NULL)
-				free(fs_types[i]);
 		}
+		if(mnt_info) free(mnt_info);
 
-		if(mnt_pts != NULL) free(mnt_pts);
-		if(fs_types != NULL) free(fs_types);
 		rb_iv_set(res,"@mount_points", mp);
 
 		// get the hash
-		struct darshan_record_ref *rec_hash = NULL;
-		err = darshan_log_gethash(fd, &rec_hash);
+		struct darshan_name_record_ref *rec_hash = NULL;
+		err = darshan_log_get_namehash(fd, &rec_hash);
 		if(err < 0) {
 			return Qnil;
 		}
@@ -185,8 +180,8 @@ static VALUE rb_darshan_next_record(VALUE self)
 	if(fd == NULL) return Qnil;
 
 	VALUE rbhash = rb_iv_get(rfd,"@hash");
-	struct darshan_record_ref* rec_hash = NULL;
-	Data_Get_Struct(rbhash,struct darshan_record_ref, rec_hash);
+	struct darshan_name_record_ref* rec_hash = NULL;
+	Data_Get_Struct(rbhash,struct darshan_name_record_ref, rec_hash);
 	if(rec_hash == NULL) return Qnil;
 
 	darshan_record_id rec_id;
@@ -211,14 +206,17 @@ static VALUE rb_darshan_next_record(VALUE self)
 	case DARSHAN_BGQ_MOD:
 		res = Darshan3rb_get_bgq_record(fd,&rec_id);
 		break;
+	case DARSHAN_LUSTRE_MOD:
+		res = Darshan3rb_get_lustre_record(fd,&rec_id);
+		break;
 	}
 
 	if(res == Qnil) return Qnil;
 
-	struct darshan_record_ref* ref;
+	struct darshan_name_record_ref* ref;
 	HASH_FIND(hlink, rec_hash, &rec_id, sizeof(darshan_record_id), ref);
 
-	rb_iv_set(res,"@name",rb_str_new2(ref->rec.name));
+	rb_iv_set(res,"@name",rb_str_new2(ref->name_record->name));
 
 	return res;
 }
@@ -244,6 +242,7 @@ void Init_Darshan3rb() {
 	Darshan3rb_init_hdf5();
 	Darshan3rb_init_pnetcdf();
 	Darshan3rb_init_bgq();
+	Darshan3rb_init_lustre();
 
 	rb_define_method(cDarshanLogFile,"next_module",
 			rb_darshan_next_module,0);

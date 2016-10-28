@@ -15,5 +15,6 @@
 #include "hdf5-module.h"
 #include "pnetcdf-module.h"
 #include "bgq-module.h"
+#include "lustre-module.h"
 
 #endif

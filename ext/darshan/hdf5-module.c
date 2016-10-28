@@ -15,15 +15,15 @@ VALUE mDarshanHDF5;
 static VALUE Darshan3rb_hdf5_get_rank(VALUE self)
 {
 	struct darshan_hdf5_file* c_record = NULL;
-	Data_Get_Struct(self,struct darshan_fd_s,c_record);
-	if(c_record) return LL2NUM(c_record->rank);
+	Data_Get_Struct(self,struct darshan_hdf5_file,c_record);
+	if(c_record) return LL2NUM(c_record->base_rec.rank);
 	else return Qnil;
 }
 
 static VALUE Darshan3rb_hdf5_get_counter(VALUE self, VALUE index)
 {
 	struct darshan_hdf5_file* c_record = NULL;
-	Data_Get_Struct(self,struct darshan_fd_s,c_record);
+	Data_Get_Struct(self, struct darshan_hdf5_file, c_record);
 	int i = NUM2INT(index);
 	if((i < 0) || (c_record == NULL)) return Qnil;
 	if(i < HDF5_NUM_INDICES) return LL2NUM(c_record->counters[i]);
@@ -55,10 +55,10 @@ void Darshan3rb_init_hdf5()
 
 VALUE Darshan3rb_get_hdf5_record(darshan_fd fd, darshan_record_id* rec_id)
 {
-	struct darshan_hdf5_file* c_record = (struct darshan_hdf5_file*)malloc(sizeof(struct darshan_hdf5_file));	
-	int r = mod_logutils[DARSHAN_HDF5_MOD]->log_get_record(fd, (char*)c_record, rec_id);
+	struct darshan_hdf5_file* c_record = NULL;
+	int r = mod_logutils[DARSHAN_HDF5_MOD]->log_get_record(fd, (void**)&c_record);
 	if(r != 1) return Qnil;
-
+	*rec_id = c_record->base_rec.id;
 	VALUE rb_record = Data_Wrap_Struct(cDarshanHDF5Record, NULL , free, c_record);
 	return rb_record;
 }

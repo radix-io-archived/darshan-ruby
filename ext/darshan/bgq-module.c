@@ -15,23 +15,15 @@ VALUE mDarshanBGQ;
 static VALUE Darshan3rb_bgq_get_rank(VALUE self)
 {
 	struct darshan_bgq_record* c_record = NULL;
-	Data_Get_Struct(self,struct darshan_fd_s,c_record);
-	if(c_record) return LL2NUM(c_record->rank);
-	else return Qnil;
-}
-
-static VALUE Darshan3rb_bgq_get_alignment(VALUE self)
-{
-	struct darshan_bgq_record* c_record = NULL;
-	Data_Get_Struct(self,struct darshan_fd_s,c_record);
-	if(c_record) return INT2NUM(c_record->alignment);
+	Data_Get_Struct(self,struct darshan_bgq_record,c_record);
+	if(c_record) return LL2NUM(c_record->base_rec.rank);
 	else return Qnil;
 }
 
 static VALUE Darshan3rb_bgq_get_counter(VALUE self, VALUE index)
 {
 	struct darshan_bgq_record* c_record = NULL;
-	Data_Get_Struct(self,struct darshan_fd_s,c_record);
+	Data_Get_Struct(self,struct darshan_bgq_record,c_record);
 	int i = NUM2INT(index);
 	if((i < 0) || (c_record == NULL)) return Qnil;
 	if(i < BGQ_NUM_INDICES) return LL2NUM(c_record->counters[i]);
@@ -59,15 +51,14 @@ void Darshan3rb_init_bgq()
 	cDarshanBGQRecord = rb_define_class_under(mDarshanBGQ,"Record",cDarshanRecord);
 	rb_define_method(cDarshanBGQRecord,"rank",Darshan3rb_bgq_get_rank,0);
 	rb_define_method(cDarshanBGQRecord,"counter",Darshan3rb_bgq_get_counter,1);
-	rb_define_method(cDarshanBGQRecord,"alignment",Darshan3rb_bgq_get_alignment,0);
 }
 
 VALUE Darshan3rb_get_bgq_record(darshan_fd fd, darshan_record_id* rec_id)
 {
-	struct darshan_bgq_record* c_record = (struct darshan_bgq_record*)malloc(sizeof(struct darshan_bgq_record));	
-	int r = mod_logutils[DARSHAN_BGQ_MOD]->log_get_record(fd, (char*)c_record, rec_id);
+	struct darshan_bgq_record* c_record = NULL;	
+	int r = mod_logutils[DARSHAN_BGQ_MOD]->log_get_record(fd, (void**)&c_record);
 	if(r != 1) return Qnil;
-
+	*rec_id = c_record->base_rec.id;
 	VALUE rb_record = Data_Wrap_Struct(cDarshanBGQRecord, NULL , free, c_record);
 	return rb_record;
 }

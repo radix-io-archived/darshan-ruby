@@ -6,6 +6,6 @@
 
 #include <ruby.h>
 
-void Darshan3rb_init_hdf5();
+void Darshan3rb_init_lustre();
 
-VALUE Darshan3rb_get_hdf5_record(darshan_fd fd, darshan_record_id* id);
+VALUE Darshan3rb_get_lustre_record(darshan_fd fd, darshan_record_id* rec_id);
