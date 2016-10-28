@@ -22,6 +22,19 @@ static VALUE Darshan3rb_lustre_get_counter(VALUE self, VALUE index)
 	else return Qnil;
 }
 
+static VALUE Darshan3rb_lustre_get_osts(VALUE self)
+{
+	struct darshan_lustre_record* c_record = NULL;
+	Data_Get_Struct(self,struct darshan_lustre_record, c_record);
+	size_t num_osts = c_record->counters[LUSTRE_STRIPE_WIDTH];
+	VALUE res = rb_ary_new2(num_osts);
+	int i;
+	for(i=0; i<num_osts; i++) {
+		rb_ary_store(res,i,LL2NUM(c_record->ost_ids[i]));
+	}
+	return res;
+}
+
 void Darshan3rb_init_lustre()
 {
 	mDarshanLustre = rb_define_module_under(mDarshan,"Lustre");
@@ -36,6 +49,7 @@ void Darshan3rb_init_lustre()
 
 	cDarshanLustreRecord = rb_define_class_under(mDarshanLustre,"Record",cDarshanRecord);
 	rb_define_method(cDarshanLustreRecord,"counter",Darshan3rb_lustre_get_counter,1);
+	rb_define_method(cDarshanLustreRecord,"osts",Darshan3rb_lustre_get_osts,0);
 }
 
 VALUE Darshan3rb_get_lustre_record(darshan_fd fd, darshan_record_id* rec_id)

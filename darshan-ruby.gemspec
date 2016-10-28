@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.name        = 'darshan-ruby'
-  s.version     = '3.0.0'
-  s.date        = '2016-03-31'
-  s.summary     = "Ruby binding to Darshan version 3 and above"
+  s.version     = '3.1.1'
+  s.date        = '2016-10-28'
+  s.summary     = "Ruby binding to Darshan version 3.1.1 and above"
   s.description = "Ruby binding to ANL's Darshan library for HPC I/O tracing and analysis"
   s.authors     = ["Matthieu Dorier"]
   s.email       = 'mdorier@anl.gov'
@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
 		   "ext/darshan/mpiio-module.c", "ext/darshan/mpiio-module.h",
 		   "ext/darshan/pnetcdf-module.c", "ext/darshan/pnetcdf-module.h",
 		   "ext/darshan/posix-module.c", "ext/darshan/posix-module.h",
+                   "ext/darshan/lustre-module.c", "ext/darshan/lustre-module.h",
 		   "ext/darshan/extconf.rb"]
   s.require_paths = [ 'lib', 'ext' ]
   s.extensions = %w[ext/darshan/extconf.rb]
