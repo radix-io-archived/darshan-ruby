@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'darshan-ruby'
-  s.version     = '3.1.1'
-  s.date        = '2016-10-28'
+  s.version     = '3.1.1.1'
+  s.date        = '2016-11-01'
   s.summary     = "Ruby binding to Darshan version 3.1.1 and above"
   s.description = "Ruby binding to ANL's Darshan library for HPC I/O tracing and analysis"
   s.authors     = ["Matthieu Dorier"]
@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
                    "ext/darshan/lustre-module.c", "ext/darshan/lustre-module.h",
 		   "ext/darshan/extconf.rb"]
   s.require_paths = [ 'lib', 'ext' ]
+  s.executables << 'quarshan'
   s.extensions = %w[ext/darshan/extconf.rb]
   s.homepage    = 'http://www.mcs.anl.gov/research/projects/darshan/'
   s.license     = 'GOVERNMENT LICENSE'

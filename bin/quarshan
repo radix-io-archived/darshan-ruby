@@ -1,0 +1,275 @@
+#!/usr/bin/env ruby
+#######################################################################
+# Author:       Matthieu Dorier
+# Institution:  Argonne National Laboratory
+# Mail:         mdorier [at] anl.gov
+# Date:         October 2016
+#######################################################################
+
+$LOAD_PATH << '../lib'
+$LOAD_PATH << '../ext/darshan'
+
+require 'rubygems' 
+require 'darshan'
+require 'optparse'
+
+# List of Darshan modules
+$darshan_mods = { "POSIX" 	=> Darshan::POSIX, 
+		  "MPI-IO" 	=> Darshan::MPIIO,
+		  "HDF5" 	=> Darshan::HDF5, 
+		  "PNETCDF"	=> Darshan::PNETCDF,
+		  "BG/Q"	=> Darshan::BGQ, 
+		  "LUSTRE"	=> Darshan::LUSTRE,
+		  "STDIO"	=> Darshan::STDIO }
+
+# List of available reduction operations
+$reduction_ops = ['min','max','avg','var','std','med']
+
+# Structure for option parsing
+Options = Struct.new(:counters,:query,:reductions,:header,:files,:mod,:qcounters)
+
+# Option parsing class
+class Parser
+
+	def self.parse(options)
+		args = Options.new([],'true',[],false,[],nil,[])
+		opt_parser = OptionParser.new do |opts|
+			opts.banner = "Usage: quarshan file1 [file2 [...]] [options]"
+
+			opts.on("-o COUNTERS", "--output COUNTERS", "Comma-separated list of counters") do |o|
+				args.counters = o.split(',')
+			end
+
+			opts.on("-v", "--verbose", "Display a header before results") do |h|
+				args.header = h
+			end
+
+			opts.on("-s CONDITION", "--select CONDITION", "Record selection condition") do |q|
+				args.query = q
+			end
+
+			opts.on("-r", "--reductions OPERATIONS", "Comma-separated list of reduction operations") do |r|
+				args.reductions = r.split(',')
+			end
+
+			opts.on("-h", "--help", "Prints this help") do
+				puts opts
+				exit
+			end
+		end
+		opt_parser.parse!(options)
+		args.files = options
+		validate(args)
+		return args
+	end
+
+	def self.validate(args)
+		# check that at least one counter is provided, otherwise we can exit right now
+		if(args.counters.size == 0)
+			exit(0)
+		end
+		# check that if reductions are present, there are as many as counters, or 1
+		if(args.reductions.size > 1)
+			if(args.reductions.size != args.counters.size)
+				$stderr << "Number of reduction operations does not match number of output counters\n"
+				exit(-1)
+			end
+		end
+		# if 1 reduction is provided, extend it to all counters
+		if(args.reductions.size == 1 && args.counters.size > 1)
+			args.reductions *= args.counters.size
+		end
+		# check that reduction operation is valid
+		for r in args.reductions
+			if(!$reduction_ops.include?(r))
+				$stderr << "Unknown reduction operation \"" << r << "\"\n"
+				exit(-1)
+			end
+		end
+		# deduce the module based on the first counter's name
+		for name,mod in $darshan_mods
+			counter = args.counters[0]
+			if(mod::NAMES.include?(counter))
+				args.mod = mod
+				break
+			end
+		end
+		# if module not found, error
+		if(args.mod == nil)
+			$stderr << "Could not deduce Darshan module from provided counters\n"
+			exit(-1)
+		end
+		# check that all counters belong to the deduced module
+		for c in args.counters
+			if(!args.mod::NAMES.include?(c))
+				$stderr << "Counter " << c << " does not belong to module "
+				$stderr << "deduced from first provided counter\n"
+				exit(-1)
+			end
+		end
+		# build the list of counters required for the query
+		pass = false
+		qcounters = []
+		query = args.query.dup
+		# tries to evaluate the query and look for unknown names to
+		# find out the list of counters
+		while(!pass)
+			begin
+				str = "x__=1; "+query
+				eval(str)
+				pass=true
+			rescue NameError => e
+				qcounters << e.name.to_s
+				query.gsub!(e.name.to_s,"x__")
+			rescue Exception => other
+				$stderr << "Error while building query counters list\n"
+				$stderr << "(Ruby error is: " << other << ")\n"
+				exit(-1)
+			end
+		end
+		# make sure the query counters are part of the module
+		for q in qcounters
+			if(!args.mod::NAMES.include?(q))
+				$stderr << "Unknown query counter " << q << " in module " << args.mod.name << "\n"
+				exit(-1)
+			end
+		end
+		args.qcounters = qcounters
+	end
+end
+
+# The Query object is initialized with an Option structure created from
+# the command line options. It accumulates results from parsed log files.
+class Query
+
+	def initialize(args)
+		@header = args.header
+		@mod = args.mod
+		@query = args.query
+		@counters = args.counters
+		@qcounters = args.qcounters
+		@counters_idx = [nil]*@counters.size
+		@qcounters_idx = [nil]*@counters.size
+		for i in 0...@counters.size
+			@counters_idx[i] = @mod::NAMES.index(@counters[i])
+		end
+		for i in 0...@qcounters.size
+			@qcounters_idx[i] = @mod::NAMES.index(@qcounters[i])
+		end
+		@reductions = args.reductions
+		@results = []
+		(@counters.size+1).times do
+			@results << []
+		end
+	end
+
+	def read_file(filename)
+		Darshan::LogFile.open(filename) do |file|
+			file.each_module do | m |
+				next if @mod != $darshan_mods[m.name]
+				m.each_record do | r |
+					process_record(r)
+				end
+			end
+		end
+	end
+
+	def process_record(record)
+		return if(!query_satisfied(record))
+		@results[0] << record.name
+		for i in 0...@counters_idx.size
+			@results[i+1] << record.counter(@counters_idx[i])
+		end
+	end
+
+	def query_satisfied(record)
+		str = ""
+		for i in 0...@qcounters.size
+			str += "#{@qcounters[i].downcase}=#{record.counter(@qcounters_idx[i])}; "
+		end
+		str += @query.downcase
+		return eval(str)
+	end
+
+	def reduce
+		return if(@reductions.size == 0)
+		@results[0] = [@results[0].size]
+		for i in 0...@reductions.size
+			eval("@results[i+1] = [#{@reductions[i]}(@results[i+1])]")
+		end
+	end
+
+	def to_s
+		res = ""
+		if(@header)
+			res += "# records\t"
+			for i in 0...@counters.size
+				if(@reductions.size == 0)
+					res += @counters[i]+"\t"
+				else
+					res += @reductions[i]+"("+@counters[i]+")\t"
+				end
+			end
+			res += "\n"
+		end
+		for j in 0...@results[0].size
+			for i in 0...@results.size
+				res += "#{@results[i][j]}\t"
+			end
+			res += "\n"
+		end
+		return res
+	end
+
+	private
+
+	def max(arr)
+		return arr.max
+	end
+
+	def min(arr)
+		return arr.min
+	end
+
+	def var(arr)
+		x = 0.0
+		for i in arr
+			x += i**2
+		end
+		x /= arr.size
+		a = avg(arr)
+		return x - a**2
+	end
+
+	def med(arr)
+		arr2 = arr.sort
+		if(arr.size % 2 == 1)
+			return arr2[arr.size/2]
+		else
+			return (arr2[arr.size/2]+arr2[arr.size/2+1])/2.0
+		end
+	end
+
+	def std(arr)
+		v = var(arr)
+		return Math.sqrt(v)
+	end
+
+	def avg(arr)
+		x = 0.0
+		for i in arr
+			x += i
+		end
+		x /= arr.size
+		return x
+	end
+end
+
+options = Parser.parse(ARGV)
+files = options.files
+query = Query.new(options)
+for f in files
+	query.read_file(f)
+end
+query.reduce
+print query
