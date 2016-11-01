@@ -120,7 +120,7 @@ and display the POSIX_BYTES_WRITTEN counter for them, use:
 
 ```
 > quarshan -o POSIX_BYTES_WRITTEN ior1.darshan -v -s "POSIX_F_META_TIME > 5.0e-5"
-# records       POSIX_BYTES_WRITTEN     POSIX_SIZE_WRITE_100K_1M
+# records       POSIX_BYTES_WRITTEN
 /home/shane/software/darshan/testFile.00000001  1048576
 /home/shane/software/darshan/testFile.00000002  1048576
 /home/shane/software/darshan/testFile.00000003  1048576
