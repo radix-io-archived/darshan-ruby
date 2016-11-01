@@ -30,7 +30,9 @@ Darshan-Ruby can be done as follows:
 If you use [RVM](https://rvm.io/) to manage your packages:
 
 > rvm gemset create darshan
+
 > rvm gemset use darshan
+
 > gem install darshan-ruby -- --with-darshan-dir=path/to/darshan
 
 QUARSHAN
