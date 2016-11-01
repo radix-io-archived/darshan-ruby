@@ -25,15 +25,17 @@ Darshan must be installed with bzip2 support, and with the --enable-shared
 build option. Assuming the path to Darshan is "path/to/darshan", install 
 Darshan-Ruby can be done as follows:
 
-> gem install darshan-ruby -- --with-darshan-dir=path/to/darshan
+```
+gem install darshan-ruby -- --with-darshan-dir=path/to/darshan
+```
 
 If you use [RVM](https://rvm.io/) to manage your packages:
 
-> rvm gemset create darshan
-
-> rvm gemset use darshan
-
-> gem install darshan-ruby -- --with-darshan-dir=path/to/darshan
+```
+rvm gemset create darshan
+rvm gemset use darshan
+gem install darshan-ruby -- --with-darshan-dir=path/to/darshan
+```
 
 QUARSHAN
 --------
@@ -43,11 +45,15 @@ Quarshan is a command-line tool to query darshan files.
 
 Once Darshan-Ruby is installed, you can call Quarshan as follows:
 
-> quarshan -o COUNTER file.darshan
+```
+quarshan -o COUNTER file.darshan
+```
 
 For example:
 
-> quarshan -o POSIX_BYTES_WRITTEN ior1.darshan
+```
+quarshan -o POSIX_BYTES_WRITTEN ior1.darshan
+```
 
 Will output
 
@@ -58,6 +64,45 @@ Will output
 /home/shane/software/darshan/testFile.00000003  1048576
 ```
 
+You can obtain a header using the **-v** option:
+
+```
+> quarshan -o POSIX_BYTES_WRITTEN ior1.darshan -v
+# records       POSIX_BYTES_WRITTEN
+/home/shane/software/darshan/testFile.00000000  1048576
+/home/shane/software/darshan/testFile.00000001  1048576
+/home/shane/software/darshan/testFile.00000002  1048576
+/home/shane/software/darshan/testFile.00000003  1048576
+```
+
+You can ask for multiple counters by separating them by commas (without spaces).
+These counters must all be part of the same module (here POSIX, for example):
+
+```
+> quarshan -o POSIX_BYTES_WRITTEN,POSIX_SIZE_WRITE_100K_1M ior1.darshan -v
+# records       POSIX_BYTES_WRITTEN     POSIX_SIZE_WRITE_100K_1M
+/home/shane/software/darshan/testFile.00000000  1048576 4
+/home/shane/software/darshan/testFile.00000001  1048576 4
+/home/shane/software/darshan/testFile.00000002  1048576 4
+/home/shane/software/darshan/testFile.00000003  1048576 4
+```
+
+You can provide reduction operations to directly compute statistics using **-r**:
+
+```
+quarshan -o POSIX_BYTES_WRITTEN,POSIX_SIZE_WRITE_100K_1M -r avg,min ior1.darshan -v
+# records       avg(POSIX_BYTES_WRITTEN)        min(POSIX_SIZE_WRITE_100K_1M)
+4       1048576.0       4
+```
+Instead of printing the name of the record on the first column, the number of
+records will be printed.
+
+Available reduction operators are: min (minimum), max (maximum), avg (average)
+var (variance), std (standard deviation), med (median), sum (sum).
+When providing reduction operations, if you provide only one reduction
+operation, it will be applied to all requested counters. If you provide multiple
+reduction operations, you must make sure to provide the same number as the number
+of counters.
 
 
 TESTING
