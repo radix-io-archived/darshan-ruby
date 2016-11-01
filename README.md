@@ -64,7 +64,9 @@ Will output
 /home/shane/software/darshan/testFile.00000003  1048576
 ```
 
-You can obtain a header using the **-v** option:
+#### Displaying a header
+
+You can obtain a header using the **-v** (or **--verbose**) option:
 
 ```
 > quarshan -o POSIX_BYTES_WRITTEN ior1.darshan -v
@@ -74,6 +76,8 @@ You can obtain a header using the **-v** option:
 /home/shane/software/darshan/testFile.00000002  1048576
 /home/shane/software/darshan/testFile.00000003  1048576
 ```
+
+#### Working with multiple counters
 
 You can ask for multiple counters by separating them by commas (without spaces).
 These counters must all be part of the same module (here POSIX, for example):
@@ -87,7 +91,10 @@ These counters must all be part of the same module (here POSIX, for example):
 /home/shane/software/darshan/testFile.00000003  1048576 4
 ```
 
-You can provide reduction operations to directly compute statistics using **-r**:
+#### Computing statistics automatically
+
+You can provide reduction operations to directly compute statistics 
+using **-r** (or **--reductions**):
 
 ```
 > quarshan -o POSIX_BYTES_WRITTEN,POSIX_SIZE_WRITE_100K_1M -r avg,min ior1.darshan -v
@@ -104,8 +111,10 @@ operation, it will be applied to all requested counters. If you provide multiple
 reduction operations, you must make sure to provide the same number as the number
 of counters.
 
-You can also **select** records that satisfy a particular condition using
-*-s* or *--select*.
+#### Conditionally selecting records
+
+You can select only records that satisfy a particular condition using
+*-s* (or *--select*).
 For example to consider only records for which POSIX_F_META_TIME > 5.0e-5, use
 and display the POSIX_BYTES_WRITTEN counter for them, use:
 
