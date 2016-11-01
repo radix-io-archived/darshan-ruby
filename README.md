@@ -39,7 +39,7 @@ QUARSHAN
 --------
 
 Starting from version 3.1.1.1, Darshan-Ruby comes with the **Quarshan** tool.
-[Click here to learn more about Quarshan.](quarshan)
+Quarshan is a command-line tool to query darshan files.
 
 TESTING
 -------
