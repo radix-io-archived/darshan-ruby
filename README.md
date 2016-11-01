@@ -90,7 +90,7 @@ These counters must all be part of the same module (here POSIX, for example):
 You can provide reduction operations to directly compute statistics using **-r**:
 
 ```
-quarshan -o POSIX_BYTES_WRITTEN,POSIX_SIZE_WRITE_100K_1M -r avg,min ior1.darshan -v
+> quarshan -o POSIX_BYTES_WRITTEN,POSIX_SIZE_WRITE_100K_1M -r avg,min ior1.darshan -v
 # records       avg(POSIX_BYTES_WRITTEN)        min(POSIX_SIZE_WRITE_100K_1M)
 4       1048576.0       4
 ```
@@ -104,6 +104,26 @@ operation, it will be applied to all requested counters. If you provide multiple
 reduction operations, you must make sure to provide the same number as the number
 of counters.
 
+You can also **select** records that satisfy a particular condition using
+*-s* or *--select*.
+For example to consider only records for which POSIX_F_META_TIME > 5.0e-5, use
+and display the POSIX_BYTES_WRITTEN counter for them, use:
+
+```
+> quarshan -o POSIX_BYTES_WRITTEN ior1.darshan -v -s "POSIX_F_META_TIME > 5.0e-5"
+# records       POSIX_BYTES_WRITTEN     POSIX_SIZE_WRITE_100K_1M
+/home/shane/software/darshan/testFile.00000001  1048576
+/home/shane/software/darshan/testFile.00000002  1048576
+/home/shane/software/darshan/testFile.00000003  1048576
+```
+
+Selection operations include all valid Ruby arithmetic and boolean operators.
+Note that the counters used in the selection query must be part of the same module
+as the counters requested for display.
+
+Note also that the query must be in between double-quotes.
+
+You can of course mix selection queries with reduction operators!
 
 TESTING
 -------
