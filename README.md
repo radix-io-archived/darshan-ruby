@@ -9,13 +9,14 @@ Please see the
 [Darshan web page](http://www.mcs.anl.gov/research/projects/darshan)
 for more in-depth news and documentation about Darshan.
 
-Darshan-Ruby is designed to support Darshan 3.0.0 and above.
+Darshan-Ruby versions x.y.z.v are designed to support Darshan versions x.y.z
+(for instance Darshan-Ruby version 3.1.1.x support Darshan 3.1.1).
 
 NOTE
 ----
  
-This source is not necessary to install Darshan-Ruby, as
-Darshan-Ruby is available as a ruby gem on rubygems.org.
+The source present on this repository is not necessary to install Darshan-Ruby, 
+as Darshan-Ruby is available as a ruby gem on [rubygems.org](http://rubygems.org).
 
 INSTALLING 
 ----------
@@ -25,6 +26,18 @@ build option. Assuming the path to Darshan is "path/to/darshan", install
 Darshan-Ruby can be done as follows:
 
 > gem install darshan-ruby -- --with-darshan-dir=path/to/darshan
+
+If you use [RVM](https://rvm.io/) to manage your packages:
+
+> rvm gemset create darshan
+> rvm gemset use darshan
+> gem install darshan-ruby -- --with-darshan-dir=path/to/darshan
+
+QUARSHAN
+--------
+
+Starting from version 3.1.1.1, Darshan-Ruby comes with the **Quarshan** tool.
+[Click here to learn more about Quarshan.](quarshan)
 
 TESTING
 -------
