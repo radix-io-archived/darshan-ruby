@@ -142,7 +142,7 @@ to know the total amount of data written for a set of jobs for which you have
 the log files in a "log" directory:
 
 ```
-> quarshan -o POSIX_BYTES_WRITTEN log/* -v
+> quarshan -o POSIX_BYTES_WRITTEN log/* -v -r sum
 # records       POSIX_BYTES_WRITTEN
 245     10485761024
 ```
