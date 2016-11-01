@@ -41,6 +41,25 @@ QUARSHAN
 Starting from version 3.1.1.1, Darshan-Ruby comes with the **Quarshan** tool.
 Quarshan is a command-line tool to query darshan files.
 
+Once Darshan-Ruby is installed, you can call Quarshan as follows:
+
+> quarshan -o COUNTER file.darshan
+
+For example:
+
+> quarshan -o POSIX_BYTES_WRITTEN ior1.darshan
+
+Will output
+
+```
+/home/shane/software/darshan/testFile.00000000  1048576
+/home/shane/software/darshan/testFile.00000001  1048576
+/home/shane/software/darshan/testFile.00000002  1048576
+/home/shane/software/darshan/testFile.00000003  1048576
+```
+
+
+
 TESTING
 -------
 
