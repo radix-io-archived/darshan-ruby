@@ -104,8 +104,8 @@ using **-r** (or **--reductions**):
 Instead of printing the name of the record on the first column, the number of
 records will be printed.
 
-Available reduction operators are: min (minimum), max (maximum), avg (average)
-var (variance), std (standard deviation), med (median), sum (sum).
+Available reduction operators are: **min** (minimum), **max** (maximum), **avg** (average)
+**var** (variance), **std** (standard deviation), **med** (median), **sum** (sum).
 When providing reduction operations, if you provide only one reduction
 operation, it will be applied to all requested counters. If you provide multiple
 reduction operations, you must make sure to provide the same number as the number
@@ -114,8 +114,8 @@ of counters.
 #### Conditionally selecting records
 
 You can select only records that satisfy a particular condition using
-*-s* (or *--select*).
-For example to consider only records for which POSIX_F_META_TIME > 5.0e-5, use
+**-s** (or **--select**).
+For example to consider only records for which POSIX_F_META_TIME > 5.0e-5
 and display the POSIX_BYTES_WRITTEN counter for them, use:
 
 ```
