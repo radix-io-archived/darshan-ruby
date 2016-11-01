@@ -206,6 +206,9 @@ static VALUE rb_darshan_next_record(VALUE self)
 	case DARSHAN_BGQ_MOD:
 		res = Darshan3rb_get_bgq_record(fd,&rec_id);
 		break;
+	case DARSHAN_STDIO_MOD:
+		res = Darshan3rb_get_stdio_record(fd,&rec_id);
+		break;
 	case DARSHAN_LUSTRE_MOD:
 		res = Darshan3rb_get_lustre_record(fd,&rec_id);
 		break;
@@ -242,6 +245,7 @@ void Init_Darshan3rb() {
 	Darshan3rb_init_hdf5();
 	Darshan3rb_init_pnetcdf();
 	Darshan3rb_init_bgq();
+	Darshan3rb_init_stdio();
 	Darshan3rb_init_lustre();
 
 	rb_define_method(cDarshanLogFile,"next_module",

@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
 		   "ext/darshan/mpiio-module.c", "ext/darshan/mpiio-module.h",
 		   "ext/darshan/pnetcdf-module.c", "ext/darshan/pnetcdf-module.h",
 		   "ext/darshan/posix-module.c", "ext/darshan/posix-module.h",
+		   "ext/darshan/stdio-module.c", "ext/darshan/stdio-module.h",
                    "ext/darshan/lustre-module.c", "ext/darshan/lustre-module.h",
 		   "ext/darshan/extconf.rb"]
   s.require_paths = [ 'lib', 'ext' ]

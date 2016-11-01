@@ -9,8 +9,8 @@
 extern VALUE cDarshanRecord;
 extern VALUE mDarshan;
 
-VALUE cDarshanLustreRecord;
-VALUE mDarshanLustre;
+VALUE cDarshanLUSTRERecord;
+VALUE mDarshanLUSTRE;
 
 static VALUE Darshan3rb_lustre_get_counter(VALUE self, VALUE index)
 {
@@ -37,19 +37,19 @@ static VALUE Darshan3rb_lustre_get_osts(VALUE self)
 
 void Darshan3rb_init_lustre()
 {
-	mDarshanLustre = rb_define_module_under(mDarshan,"Lustre");
+	mDarshanLUSTRE = rb_define_module_under(mDarshan,"LUSTRE");
 
 	VALUE cnames = rb_ary_new2(LUSTRE_NUM_INDICES);
 	int i;
 	for(i=0; i < LUSTRE_NUM_INDICES; i++) {
 		rb_ary_store(cnames,i,rb_str_new2(mpiio_counter_names[i]));
-		rb_define_const(mDarshanLustre,mpiio_counter_names[i],INT2NUM(i));
+		rb_define_const(mDarshanLUSTRE,mpiio_counter_names[i],INT2NUM(i));
 	}
-	rb_define_const(mDarshanLustre,"NAMES",cnames);
+	rb_define_const(mDarshanLUSTRE,"NAMES",cnames);
 
-	cDarshanLustreRecord = rb_define_class_under(mDarshanLustre,"Record",cDarshanRecord);
-	rb_define_method(cDarshanLustreRecord,"counter",Darshan3rb_lustre_get_counter,1);
-	rb_define_method(cDarshanLustreRecord,"osts",Darshan3rb_lustre_get_osts,0);
+	cDarshanLUSTRERecord = rb_define_class_under(mDarshanLUSTRE,"Record",cDarshanRecord);
+	rb_define_method(cDarshanLUSTRERecord,"counter",Darshan3rb_lustre_get_counter,1);
+	rb_define_method(cDarshanLUSTRERecord,"osts",Darshan3rb_lustre_get_osts,0);
 }
 
 VALUE Darshan3rb_get_lustre_record(darshan_fd fd, darshan_record_id* rec_id)
@@ -58,6 +58,6 @@ VALUE Darshan3rb_get_lustre_record(darshan_fd fd, darshan_record_id* rec_id)
 	int r = mod_logutils[DARSHAN_LUSTRE_MOD]->log_get_record(fd, (void**)&c_record);
 	if(r != 1) return Qnil;
 	*rec_id = c_record->base_rec.id;
-	VALUE rb_record = Data_Wrap_Struct(cDarshanLustreRecord, NULL , free, c_record);
+	VALUE rb_record = Data_Wrap_Struct(cDarshanLUSTRERecord, NULL , free, c_record);
 	return rb_record;
 }
