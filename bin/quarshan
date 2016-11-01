@@ -23,7 +23,7 @@ $darshan_mods = { "POSIX" 	=> Darshan::POSIX,
 		  "STDIO"	=> Darshan::STDIO }
 
 # List of available reduction operations
-$reduction_ops = ['min','max','avg','var','std','med']
+$reduction_ops = ['min','max','avg','var','std','med', 'sum']
 
 # Structure for option parsing
 Options = Struct.new(:counters,:query,:reductions,:header,:files,:mod,:qcounters)
@@ -261,6 +261,14 @@ class Query
 			x += i
 		end
 		x /= arr.size
+		return x
+	end
+
+	def sum(arr)
+		x = 0.0
+		for i in arr
+			x += i
+		end
 		return x
 	end
 end
