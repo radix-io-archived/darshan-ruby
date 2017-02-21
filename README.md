@@ -104,8 +104,8 @@ using **-r** (or **--reductions**):
 Instead of printing the name of the record on the first column, the number of
 records will be printed.
 
-Available reduction operators are: min (minimum), max (maximum), avg (average)
-var (variance), std (standard deviation), med (median), sum (sum).
+Available reduction operators are: **min** (minimum), **max** (maximum), **avg** (average)
+**var** (variance), **std** (standard deviation), **med** (median), **sum** (sum).
 When providing reduction operations, if you provide only one reduction
 operation, it will be applied to all requested counters. If you provide multiple
 reduction operations, you must make sure to provide the same number as the number
@@ -114,13 +114,13 @@ of counters.
 #### Conditionally selecting records
 
 You can select only records that satisfy a particular condition using
-*-s* (or *--select*).
-For example to consider only records for which POSIX_F_META_TIME > 5.0e-5, use
+**-s** (or **--select**).
+For example to consider only records for which POSIX_F_META_TIME > 5.0e-5
 and display the POSIX_BYTES_WRITTEN counter for them, use:
 
 ```
 > quarshan -o POSIX_BYTES_WRITTEN ior1.darshan -v -s "POSIX_F_META_TIME > 5.0e-5"
-# records       POSIX_BYTES_WRITTEN     POSIX_SIZE_WRITE_100K_1M
+# records       POSIX_BYTES_WRITTEN
 /home/shane/software/darshan/testFile.00000001  1048576
 /home/shane/software/darshan/testFile.00000002  1048576
 /home/shane/software/darshan/testFile.00000003  1048576
@@ -133,6 +133,19 @@ as the counters requested for display.
 Note also that the query must be in between double-quotes.
 
 You can of course mix selection queries with reduction operators!
+
+#### Working with multiple darshan files
+
+You can process a series of Darshan log files at once the same way you process
+a single file. You can even process an entire directory, for example if you want
+to know the total amount of data written for a set of jobs for which you have
+the log files in a "log" directory:
+
+```
+> quarshan -o POSIX_BYTES_WRITTEN log/* -v -r sum
+# records       POSIX_BYTES_WRITTEN
+245     10485761024
+```
 
 TESTING
 -------
