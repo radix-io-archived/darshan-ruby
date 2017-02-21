@@ -17,5 +17,6 @@
 #include "bgq-module.h"
 #include "lustre-module.h"
 #include "stdio-module.h"
+#include "dxt-module.h"
 
 #endif

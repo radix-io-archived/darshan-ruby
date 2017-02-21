@@ -69,6 +69,11 @@ Darshan::LogFile.open(ARGV[0]) do | logfile |
 					for i in 0...Darshan::BGQ::NAMES.size
 						print_counter(record,Darshan::BGQ::NAMES,i)
 					end
+				when Darshan::DXT::Record
+					print " #{record.name}\t accessed by\t #{record.rank}\n"
+					print "    hostname = #{record.hostname}\n"
+					print "    write_count = #{record.write_count}\n"
+					print "    read_count  = #{record.read_count}\n"
 			end
 		end
 	end

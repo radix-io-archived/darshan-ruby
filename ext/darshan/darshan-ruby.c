@@ -212,6 +212,12 @@ static VALUE rb_darshan_next_record(VALUE self)
 	case DARSHAN_LUSTRE_MOD:
 		res = Darshan3rb_get_lustre_record(fd,&rec_id);
 		break;
+	case DXT_POSIX_MOD:
+		res = Darshan3rb_get_dxt_posix_record(fd,&rec_id);
+		break;
+	case DXT_MPIIO_MOD:
+		res = Darshan3rb_get_dxt_mpiio_record(fd,&rec_id);
+		break;
 	}
 
 	if(res == Qnil) return Qnil;
@@ -247,6 +253,7 @@ void Init_Darshan3rb() {
 	Darshan3rb_init_bgq();
 	Darshan3rb_init_stdio();
 	Darshan3rb_init_lustre();
+	Darshan3rb_init_dxt();
 
 	rb_define_method(cDarshanLogFile,"next_module",
 			rb_darshan_next_module,0);
