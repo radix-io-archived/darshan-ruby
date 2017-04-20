@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'darshan-ruby'
-  s.version     = '3.1.4.1'
+  s.version     = '3.1.4.2'
   s.date        = '2017-04-20'
   s.summary     = "Ruby binding to Darshan version 3.1.4 and above"
   s.description = "Ruby binding to ANL's Darshan library for HPC I/O tracing and analysis"

@@ -212,6 +212,9 @@ class Query
 			modules_present = []
 			file.each_module do | m |
 				modules_present << m.name
+				if @counters.size
+					log_processed = true
+				end
 				next if @mod != $darshan_mods[m.name]
 				m.each_record do | r |
 					if r.name.start_with?(@prefix)
@@ -220,7 +223,7 @@ class Query
 					end
 				end
 			end
-			if (log_processed || @counters.size == 0) && @info
+			if log_processed && @info
 				idx = 0
 				if @counters.size == 0
 					idx = @results[-1].size
@@ -273,6 +276,12 @@ class Query
 				end
 			end
 			res += "\n"
+		end
+
+		if @reductions.size > 0
+			@results[-1].each do |k,v|
+				res += v
+			end
 		end
 
 		if @counters.size != 0
