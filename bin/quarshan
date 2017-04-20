@@ -14,25 +14,27 @@ require 'darshan'
 require 'optparse'
 
 # List of Darshan modules
-$darshan_mods = { "POSIX" 	=> Darshan::POSIX, 
+$darshan_mods = { 
+		  "POSIX" 	=> Darshan::POSIX, 
 		  "MPI-IO" 	=> Darshan::MPIIO,
 		  "HDF5" 	=> Darshan::HDF5, 
 		  "PNETCDF"	=> Darshan::PNETCDF,
 		  "BG/Q"	=> Darshan::BGQ, 
 		  "LUSTRE"	=> Darshan::LUSTRE,
-		  "STDIO"	=> Darshan::STDIO }
+		  "STDIO"	=> Darshan::STDIO 
+}
 
 # List of available reduction operations
 $reduction_ops = ['min','max','avg','var','std','med', 'sum']
 
 # Structure for option parsing
-Options = Struct.new(:counters,:query,:reductions,:header,:files,:mod,:qcounters)
+Options = Struct.new(:counters,:query,:reductions,:header,:prefix,:files,:mod,:qcounters,:info)
 
 # Option parsing class
 class Parser
 
 	def self.parse(options)
-		args = Options.new([],'true',[],false,[],nil,[])
+		args = Options.new([],'true',[],false,'',[],nil,[],false)
 		opt_parser = OptionParser.new do |opts|
 			opts.banner = "Usage: quarshan file1 [file2 [...]] [options]"
 
@@ -50,6 +52,14 @@ class Parser
 
 			opts.on("-r", "--reductions OPERATIONS", "Comma-separated list of reduction operations") do |r|
 				args.reductions = r.split(',')
+			end
+
+			opts.on("-p", "--prefix PREFIX", "Prefixes that file records should have to be considered") do |r|
+				args.prefix = r
+			end
+
+			opts.on("-i", "--info", "Prints information about files that satisfy a query") do | r |
+				args.info = true
 			end
 
 			opts.on("-h", "--help", "Prints this help") do
@@ -146,8 +156,10 @@ class Query
 		@header = args.header
 		@mod = args.mod
 		@query = args.query
+		@prefix = args.prefix == [] ? "" :  args.prefix
 		@counters = args.counters
 		@qcounters = args.qcounters
+		@info = args.info
 		@counters_idx = [nil]*@counters.size
 		@qcounters_idx = [nil]*@counters.size
 		for i in 0...@counters.size
@@ -158,28 +170,66 @@ class Query
 		end
 		@reductions = args.reductions
 		@results = []
+		# @results[0] is a column of record names
+		# @results[1] to @results[@counters.size] are columns of results
+		# @results[@counters.size+1] is a hash associating a line X to a LogFileInfo object
 		(@counters.size+1).times do
 			@results << []
 		end
+		@results << {} # for LogFileInfo
+	end
+
+	def get_logfile_info(file,mods=[])
+		res = "# ----- NEW LOG FILE ----\n"
+		res += "# name: #{file.name}\n"
+		res += "# darshan version: #{file.version}\n"
+		res += "# executable: #{file.exe}\n"
+		res += "# uid: #{file.uid}\n"
+		res += "# job id: #{file.job_id}\n"
+		res += "# nprocs: #{file.nprocs}\n"
+		res += "# start time: #{file.start_time}\n"
+		res += "# end time: #{file.end_time}\n"
+		res += "# metadata: #{file.metadata}\n"
+		res += "# mount points: \n"
+		file.mount_points.each do | mp |
+			res += "#\t#{mp[:path]} (#{mp[:type]})\n"
+		end
+		res += "# modules:"
+		for m in mods
+			res += " #{m}"
+		end
+		res += "\n"
+		return res
 	end
 
 	def read_file(filename)
+		current_line = @results[0].size
 		Darshan::LogFile.open(filename) do |file|
+			log_processed = false
+			modules_present = []
 			file.each_module do | m |
+				modules_present << m.name
 				next if @mod != $darshan_mods[m.name]
 				m.each_record do | r |
-					process_record(r)
+					if r.name.start_with?(@prefix)
+						b = process_record(r)
+						log_processed = true if b
+					end
 				end
+			end
+			if log_processed && @info
+				@results[-1][current_line] = get_logfile_info(file,modules_present)
 			end
 		end
 	end
 
 	def process_record(record)
-		return if(!query_satisfied(record))
+		return false if(!query_satisfied(record))
 		@results[0] << record.name
 		for i in 0...@counters_idx.size
 			@results[i+1] << record.counter(@counters_idx[i])
 		end
+		return true
 	end
 
 	def query_satisfied(record)
@@ -212,8 +262,12 @@ class Query
 			end
 			res += "\n"
 		end
-		for j in 0...@results[0].size
-			for i in 0...@results.size
+		for j in 0...@results[0].size # for all rows
+			if (@results[-1][j] != nil) && (@reductions.size == 0)
+				# print the file info
+				res += "#{@results[-1][j]}"
+			end
+			for i in 0...(@results.size-1) # for all columns
 				res += "#{@results[i][j]}\t"
 			end
 			res += "\n"

@@ -7,3 +7,6 @@ ext/darshan/mkmf.log
 ext/darshan/mpiio-module.o
 ext/darshan/pnetcdf-module.o
 ext/darshan/posix-module.o
+ext/darshan/dxt-module.o
+ext/darshan/lustre-module.o
+ext/darshan/stdio-module.o
