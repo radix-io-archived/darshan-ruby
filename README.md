@@ -134,6 +134,20 @@ Note also that the query must be in between double-quotes.
 
 You can of course mix selection queries with reduction operators!
 
+#### Selecting based on path
+
+You can select only the records that have a path with a specified prefix,
+using the **-p** (or **--prefix**) option. For example to select only the
+records that belonged to /home, use the following command:
+
+```
+> quarshan -o POSIX_BYTES_WRITTEN -p /home ior1.darshan
+# records       POSIX_BYTES_WRITTEN
+/home/shane/software/darshan/testFile.00000001  1048576
+/home/shane/software/darshan/testFile.00000002  1048576
+/home/shane/software/darshan/testFile.00000003  1048576
+```
+
 #### Working with multiple darshan files
 
 You can process a series of Darshan log files at once the same way you process
@@ -146,6 +160,38 @@ the log files in a "log" directory:
 # records       POSIX_BYTES_WRITTEN
 245     10485761024
 ```
+
+#### Displaying log information
+
+The **-i** (or **--info**) option can be used to provide more information about
+the log files being processed. If only this option is provided, quarsahn will
+display information about the log file(s). For example:
+
+```
+> quarshan -i ior1.darshan
+# ----- NEW LOG FILE ----
+# name: ior1.darshan
+# darshan version: 3.00
+# executable: ./ior -F
+# uid: 1000
+# job id: 22418
+# nprocs: 4
+# start time: 2015-12-16 14:46:13 -0600
+# end time: 2015-12-16 14:46:13 -0600
+# metadata: {"lib_ver"=>"3.0.0-pre3", "h"=>"romio_no_indep_rw=true;cb_nodes=4"}
+# mount points: 
+#	/run/user/1000/gvfs (fuse.gvfsd-fuse)
+#	/sys/fs/pstore (pstore)
+#	/dev (devtmpfs)
+#	/ (ext4)
+# modules: POSIX
+```
+
+This option can be used in conjunction with the **-o** option, in which case the
+log file information will precede the list of records extracted from the file.
+This option also works with reduction operations, in which case the list of
+log file information will appear all before the resulting reduction.
+
 
 TESTING
 -------
