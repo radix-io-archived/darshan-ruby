@@ -208,22 +208,25 @@ class Query
 	def read_file(filename)
 		current_line = @results[0].size
 		Darshan::LogFile.open(filename) do |file|
-			log_processed = false
+			has_header_info = false
+			name_matched = false
 			modules_present = []
 			file.each_module do | m |
 				modules_present << m.name
-				if @counters.size
-					log_processed = true
+				if @counters.size && @prefix == ""
+					has_header_info = true
 				end
 				next if @mod != $darshan_mods[m.name]
 				m.each_record do | r |
 					if r.name.start_with?(@prefix)
 						b = process_record(r)
-						log_processed = true if b
+						has_header_info = b || has_header_info
+						name_matched = true
 					end
 				end
 			end
-			if log_processed && @info
+			has_header_info = has_header_info || name_matched
+			if has_header_info && @info
 				idx = 0
 				if @counters.size == 0
 					idx = @results[-1].size
