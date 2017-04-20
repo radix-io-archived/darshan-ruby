@@ -74,8 +74,9 @@ class Parser
 	end
 
 	def self.validate(args)
-		# check that at least one counter is provided, otherwise we can exit right now
-		if(args.counters.size == 0)
+		# check that at least one counter is provided, otherwise we can exit right now,
+		# unless the user wants the file's informations
+		if(args.counters.size == 0 && args.info == false)
 			exit(0)
 		end
 		# check that if reductions are present, there are as many as counters, or 1
@@ -97,15 +98,17 @@ class Parser
 			end
 		end
 		# deduce the module based on the first counter's name
-		for name,mod in $darshan_mods
-			counter = args.counters[0]
-			if(mod::NAMES.include?(counter))
-				args.mod = mod
-				break
+		if args.counters.size != 0
+			for name,mod in $darshan_mods
+				counter = args.counters[0]
+				if(mod::NAMES.include?(counter))
+					args.mod = mod
+					break
+				end
 			end
 		end
 		# if module not found, error
-		if(args.mod == nil)
+		if(args.mod == nil && args.counters.size != 0)
 			$stderr << "Could not deduce Darshan module from provided counters\n"
 			exit(-1)
 		end
@@ -217,8 +220,14 @@ class Query
 					end
 				end
 			end
-			if log_processed && @info
-				@results[-1][current_line] = get_logfile_info(file,modules_present)
+			if (log_processed || @counters.size == 0) && @info
+				idx = 0
+				if @counters.size == 0
+					idx = @results[-1].size
+				else
+					idx = current_line
+				end
+				@results[-1][idx] = get_logfile_info(file,modules_present)
 			end
 		end
 	end
@@ -233,6 +242,9 @@ class Query
 	end
 
 	def query_satisfied(record)
+		if @counters.size == 0
+			return false
+		end
 		str = ""
 		for i in 0...@qcounters.size
 			str += "#{@qcounters[i].downcase}=#{record.counter(@qcounters_idx[i])}; "
@@ -251,7 +263,7 @@ class Query
 
 	def to_s
 		res = ""
-		if(@header)
+		if(@header && @counters.size != 0)
 			res += "# records\t"
 			for i in 0...@counters.size
 				if(@reductions.size == 0)
@@ -262,7 +274,9 @@ class Query
 			end
 			res += "\n"
 		end
-		for j in 0...@results[0].size # for all rows
+
+		if @counters.size != 0
+		  for j in 0...@results[0].size # for all rows
 			if (@results[-1][j] != nil) && (@reductions.size == 0)
 				# print the file info
 				res += "#{@results[-1][j]}"
@@ -271,6 +285,11 @@ class Query
 				res += "#{@results[i][j]}\t"
 			end
 			res += "\n"
+		  end
+		else # @counters.size == 0
+			@results[-1].each do |k,v|
+				res += v
+			end
 		end
 		return res
 	end
